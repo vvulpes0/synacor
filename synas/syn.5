@@ -1,0 +1,74 @@
+.\"-
+.\" SPDX-License-Identifier: MIT
+.\"
+.\" Copyright (c) 2021 Dakotah Lambert
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the right to use, copy, modifiy, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+.\" EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+.\" CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+.\" TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+.\" SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.Dd December 29, 2021
+.Dt SYN 5
+.Os
+.Sh NAME
+.Nm syn
+.Nd Synacor object file format
+.Sh DESCRIPTION
+Object files are represented by a simple structure.
+The first eight bytes of the file are the magic ASCII string
+.Dq Li =SYN10>
+followed by a newline character.
+In the following discussion, all integers are little-endian.
+The first two bytes following the magic string are a
+16-bit integer representing the count of locations
+which contain base-relative addresses.
+The locations themselves follow, and each is a 16-bit integer.
+The values at these locations must be incremented
+by the load address of the object upon linking.
+.Pp
+The first two bytes following this list of locations
+is a 16-bit integer describing the number of exported symbols.
+Following this is that quantity of records, each consisting of
+a 16-bit base-relative location to which the symbol points
+followed by its name as a null-terminated string.
+.Pp
+The first two bytes following this list of export symbols
+is a 16-bit integer describing the number of external relocations.
+Following this is that quantity of records, each consisting of
+a 16-bit base-relative location which should be updated
+followed by the name of the external symbol as a null-terminated string.
+.Pp
+Finally after all of these lists is the instruction stream.
+When
+.Xr synas 1
+generates an object file,
+the holes for external relocations are filled with
+.Li 0xFFFF .
+.Sh SEE ALSO
+.Xr svm 1 ,
+.Xr synas 1 ,
+.Xr synld 1 ,
+.Xr synas 5
+.Sh HISTORY
+The
+.Lk "https://challenge.synacor.com" "Synacor Challenge"
+describes a simple machine and provides a sample program for said machine.
+Participants were to implement
+a virtual machine capable of running the provided program.
+Extending this challenge, an assembler and linker were contructed
+in December of 2021.

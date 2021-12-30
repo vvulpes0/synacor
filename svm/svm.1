@@ -1,0 +1,129 @@
+.\"-
+.\" SPDX-License-Identifier: MIT
+.\"
+.\" Copyright (c) 2021 Dakotah Lambert
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the right to use, copy, modifiy, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+.\" EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+.\" CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+.\" TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+.\" SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.Dd December 27, 2021
+.Dt SVM 1
+.Os
+.Sh NAME
+.Nm svm
+.Nd run a Synacor program
+.Sh SYNOPSIS
+.Nm
+.Ar program_file
+.Sh DESCRIPTION
+The
+.Nm
+utility instantiates a VM for the provided
+.Ar program_file
+and runs the corresponding program.
+.Pp
+If
+.Nm
+receives a SIGINT or SIGUSR1 signal, the builtin debugger is opened.
+The following commands are available:
+.Bl -tag -width "d [loc [n]]"
+.It Cm c
+continue
+.It Cm d Op Ar loc Op Ar n
+disassemble
+.Ar n
+instructions beginning at
+.Ar loc .
+The default location is the most recently retired instruction,
+and the default quantity is 10.
+.It Cm h
+halt
+.It Cm m Ar loc Op Ar v
+If
+.Ar v
+is provided, set the memory location
+.Ar loc
+to the value
+.Ar v .
+Otherwise, print the value at memory location
+.Ar loc .
+.It Cm r Op Ar n Op Ar v
+If
+.Ar n
+and
+.Ar v
+are provided, set the register numbered
+.Ar n
+to the value
+.Ar v .
+If only
+.Ar n
+is provided, print the value of the register numbered
+.Ar n .
+Otherwise, print the values of all registers.
+.It Cm s Op Ar n
+Single-step execute
+.Ar n
+instructions, defaulting to one.
+.El
+.Pp
+All values are numeric and may be provided in octal or hexadecimal
+by prefixing them with
+.Dq 0
+or
+.Dq 0x ,
+respectively.
+.Sh EXIT STATUS
+The
+.Nm
+utility exits 0 on success.
+Failure of the virtualized program is indicated by the following codes:
+.Bl -tag -width "n" -compact
+.It 3
+.Sy SVM_UNIMPLEMENTED
+The program attempted to execute an instruction that does not exist.
+.It 4
+.Sy SVM_NULL
+A stack push failed due to failed memory allocation.
+.It 5
+.Sy SVM_NONREG
+The destination of an instruction
+was a literal rather than a register.
+.It 6
+.Sy SVM_EMPTY
+An instruction attempted to pop from the stack,
+but the stack was empty.
+.El
+.Pp
+Any other nonzero exit status indicates a failure of
+.Nm
+itself rather than the program executing within it.
+.Sh SEE ALSO
+.Xr synas 1 ,
+.Xr synld 1 ,
+.Xr libsvm 3
+.Sh HISTORY
+The
+.Lk "https://challenge.synacor.com" "Synacor Challenge"
+describes a simple machine and provides a sample program for said machine.
+Participants were to implement
+a virtual machine capable of running the provided program.
+This implementation was constructed in December of 2021.
+.Sh BUGS
+There are no breakpoints or watchpoints in the debugger.

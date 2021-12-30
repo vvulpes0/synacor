@@ -1,0 +1,178 @@
+.\"-
+.\" SPDX-License-Identifier: MIT
+.\"
+.\" Copyright (c) 2021 Dakotah Lambert
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the right to use, copy, modifiy, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+.\" EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+.\" CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+.\" TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+.\" SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.Dd December 27, 2021
+.Dt LIBSVM 3
+.Os
+.Sh NAME
+.Nm libsvm ,
+.Nm svm_da ,
+.Nm svm_in ,
+.Nm svm_out ,
+.Nm svm_pop ,
+.Nm svm_push ,
+.Nm svm_run ,
+.Nm svm_set ,
+.Nm svm_step
+.Nd Synacor VM library
+.Sh LIBRARY
+.Lb libsvm
+.Sh SYNOPSIS
+.In svm.h
+.Bd -literal
+.Vt "struct SVM_RegBank"
+{
+	uint16_t r0;
+	uint16_t r1;
+	uint16_t r2;
+	uint16_t r3;
+	uint16_t r4;
+	uint16_t r5;
+	uint16_t r6;
+	uint16_t r7;
+};
+.Ed
+.Bd -literal
+.Vt "struct SVM_Stack"
+{
+	struct SVM_Stack * tail;
+	uint16_t head;
+};
+.Ed
+.Bd -literal
+.Vt "struct SVM_State"
+{
+	struct SVM_Stack * sp;
+	uint16_t * ram;
+	size_t ram_size;
+	size_t pc;
+	size_t rpc;
+	struct SVM_RegBank regs;
+	_Bool halted;
+};
+.Pp
+.Ed
+.Ft int
+.Fn svm_da "struct SVM_State *s" "size_t loc" "int n"
+.Ft void
+.Fn svm_in "uint16_t * r"
+.Ft void
+.Fn svm_out "uint16_t v"
+.Ft _Bool
+.Fn svm_pop "struct SVM_Stack ** q" "uint16_t * r"
+.Ft "struct SVM_Stack *"
+.Fn svm_push "struct SVM_Stack * q" "uint16_t v"
+.Ft int
+.Fn svm_run "struct SVM_State *s"
+.Ft void
+.Fn svm_set "uint16_t * const r" "uint16_t v"
+.Ft int
+.Fn svm_step "struct SVM_State *s"
+.Sh DESCRIPTION
+The
+.Fn svm_run
+and
+.Fn svm_step
+functions run the program in the instantiated VM
+.Ar s .
+The former runs to completion
+while the latter runs only a single instruction at a time.
+If an error occurs,
+either function returns a nonzero value indicating the error.
+Otherwise, zero is returned.
+.Pp
+The
+.Fn svm_in
+and
+.Fn svm_out
+functions perform I/O.
+The
+.Fn svm_in
+function
+gets a character from the standard input
+and assigns it to the destination
+.Ar r ,
+while
+.Fn svm_out
+prints the provided character
+.Ar v
+to standard output.
+.Pp
+The
+.Fn svm_push
+and
+.Fn svm_pop
+functions operate on the VM's
+theoretically unbounded stack.
+.Fn svm_push
+constructs a new element whose head is the provided value
+.Ar v
+and whose tail is the given stack
+.Ar q ,
+then returns the resulting structure.
+The
+.Fn svm_pop
+function removes the top value from the stack
+and assigns it to the provided integer
+.Ar r ,
+and returns a Boolean indicating whether this was successful.
+.Pp
+The
+.Fn svm_set
+function assigns the value
+.Ar v
+to the location
+.Ar r .
+.Pp
+The
+.Fn svm_da
+function prints to the standard output
+a disassembly of the virtual memory beginning at
+.Ar loc
+for
+.Ar n
+instructions.
+.Sh RETURN VALUES
+.Fn svm_in
+and
+.Fn svm_out
+do not return a value.
+.Pp
+.Fn svm_run
+and
+.Fn svm_step
+return 0 for success or nonzero for error.
+.Pp
+.Fn svm_push
+returns an updated stack, while
+.Fn svm_pop
+returns an indication of whether the pop succeeded,
+1 for success or 0 for failure.
+.Pp
+.Fn svm_da
+returns the number of words consumed by the instructions
+that it disassembled.
+.Sh SEE ALSO
+.Xr svm 1 ,
+.Xr synas 5

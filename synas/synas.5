@@ -1,0 +1,260 @@
+.\"-
+.\" SPDX-License-Identifier: MIT
+.\"
+.\" Copyright (c) 2021 Dakotah Lambert
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the right to use, copy, modifiy, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+.\" EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+.\" CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+.\" TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+.\" SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.Dd December 29, 2021
+.Dt SYNAS 5
+.Os
+.Sh NAME
+.Nm synas
+.Nd Synacor assembly language
+.Sh DESCRIPTION
+This description of Synacor assembly language is line-oriented.
+A line consists of zero or more of the following, in order:
+a
+.Sy label ,
+an
+.Sy instruction ,
+and a
+.Sy comment .
+A
+.Sy label
+consists of an identifier followed by a colon,
+optionally separated by whitespace.
+A
+.Sy comment
+consists of descriptive text
+and begins at a
+.Dq Li "#"
+character, continuing until the end of the line.
+Finally an instruction is one of the following:
+.Bl -tag -width "mult reg, num, num"
+.It Cm halt
+stop execution and terminate the program.
+.It Cm set Ar reg , Ar num
+set the register
+.Ar reg
+to the value
+.Ar num .
+.It Cm push Ar num
+push the value of
+.Ar num
+onto the stack.
+.It Cm pop Ar reg
+pop a value from the top of the stack into
+.Ar reg .
+If the stack is empty, this is an error.
+.It Cm eq Ar reg , Ar num , Ar num
+set the register
+.Ar reg
+to an indication of whether the two
+.Ar num
+operands are equal: 1 if so, 0 otherwise.
+.It Cm gt Ar reg , Ar num , Ar num
+set the register
+.Ar reg
+to an indication of whether the first
+.Ar num
+operand is strictly greater than the second: 1 if so, 0 otherwise.
+.It Cm jmp Ar num
+continue execution from the location indicated by
+.Ar num .
+.It Cm jt Ar num , Ar num
+if the first
+.Ar num
+operand is nonzero,
+continue execution from the location indicated by the second.
+Otherwise proceed as normal.
+.It Cm jf Ar num , Ar num
+if the first
+.Ar num
+operand is zero,
+continue execution from the location indicated by the second.
+Otherwise proceed as normal.
+.It Cm add Ar reg , Ar num , Ar num
+set the register
+.Ar reg
+to the sum of the two
+.Ar num
+operands.
+.It Cm mult Ar reg , Ar num , Ar num
+set the register
+.Ar reg
+to the product of the two
+.Ar num
+operands.
+.It Cm mod Ar reg , Ar num , Ar num
+set the register
+.Ar reg
+to the remainder obtained when dividing the first
+.Ar num
+operand by the second.
+.It Cm and Ar reg , Ar num , Ar num
+set the register
+.Ar reg
+to the bitwise AND of the two
+.Ar num
+operands.
+.It Cm or Ar reg , Ar num , Ar num
+set the register
+.Ar reg
+to the bitwise OR of the two
+.Ar num
+operands.
+.It Cm not Ar reg , Ar num
+set the register
+.Ar reg
+to the bitwise complement of the
+.Ar num
+operand.
+.It Cm rmem Ar reg , Ar num
+set the register
+.Ar reg
+to the value contained at the memory address specified by the
+.Ar num
+operand.
+.It Cm wmem Ar num , Ar num
+set the value of the memory address specified by the first
+.Ar num
+operand to the value of the second.
+.It Cm call Ar num
+push the address of the following instruction onto the stack
+and continue execution from the address indicated by the
+.Ar num
+operand.
+.It Cm ret
+pop an address from the stack and continue execution from there.
+If the stack was empty, this is an error.
+.It Cm out Ar num
+write to the standard output
+the character whose (extended) ASCII value is specified by the
+.Ar num
+operand.
+.It Cm in Ar reg
+read from the standard input
+an (extended) ASCII character and set the
+.Ar reg
+operand to an integer representation of its value.
+.It Cm noop
+do nothing and continue.
+.It Cm dw Ar lit
+insert the
+.Ar lit
+operand directly as data.
+.El
+.Pp
+A
+.Sy reg
+is a register and is represented by the register index between 0 and 7,
+inclusive, preceded by the letter
+.Dq r ,
+such as
+.Dq r3
+representing register 3, the fourth register.
+A
+.Sy num
+is a register,
+a decimal literal composed of the digits zero through nine
+optionally preceded by a minus sign,
+a hexadecimal literal composed of the digits zero through nine
+and the letters A through F (case-insensitive)
+preceded by a
+.Dq "$"
+character,
+or an identifier.
+A
+.Sy lit
+is a literal, any num other than a register.
+An
+.Sy identifier
+is a sequence of characters from the following set:
+.Dl _ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
+If the identifier begins with an underscore
+.Pq Dq "_"
+then it is a global identifier
+and will be included in the resulting object file,
+otherwise it is a local identifier.
+All referenced local identifiers
+must be used as labels in the current file.
+.Sh EXAMPLES
+The following program displays the string
+.Dq "Hello, world!"
+followed by a newline character.
+It exports a single symbol,
+.Dq Sy _main ,
+while the other three labels are local.
+.Bd -literal
+_main:	set  r0, str
+top:	rmem r1, [r0]
+	jf   r1, end
+	out  r1
+	add  r0, r0, 1
+	jmp  top
+end:	halt
+str:	dw $48
+	dw $65
+	dw $6c
+	dw $6c
+	dw $6f
+	dw $20
+	dw $77
+	dw $6f
+	dw $72
+	dw $6c
+	dw $64
+	dw $21
+	dw $0A
+	dw 0
+.Ed
+.Pp
+The following is an overly complicated way to display the character
+.Dq x ,
+whose ASCII value is 120,
+making use of the factorial.
+It exports a single symbol,
+.Dq Sy _main ,
+while the other two labels are local.
+.Bd -literal
+_main:	set  r0, 5
+	set  r1, r0
+L1:	add  r1, r1, $7FFF # numbers are 15-bit, subtract one
+	jf   r1, end
+	mult r0, r0, r1
+	jmp L1
+end:	out  r0 # output ASCII 120 (x)
+	out  10 # and output a newline
+	halt
+.Ed
+.Sh SEE ALSO
+.Xr svm 1 ,
+.Xr synas 1 ,
+.Xr synld 1 ,
+.Xr syn 5
+.Sh HISTORY
+The
+.Lk "https://challenge.synacor.com" "Synacor Challenge"
+describes a simple machine and provides a sample program for said machine.
+Participants were to implement
+a virtual machine capable of running the provided program.
+Extending this challenge, an assembler and linker were contructed
+in December of 2021.

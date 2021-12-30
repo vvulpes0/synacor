@@ -1,0 +1,71 @@
+.\"-
+.\" SPDX-License-Identifier: MIT
+.\"
+.\" Copyright (c) 2021 Dakotah Lambert
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the right to use, copy, modifiy, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be included
+.\" in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+.\" EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+.\" IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+.\" CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+.\" TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+.\" SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.\"
+.Dd December 29, 2021
+.Dt SYNAS 1
+.Os
+.Sh NAME
+.Nm synas
+.Nd assemble a Synacor program
+.Sh SYNOPSIS
+.Nm
+.Op Fl o Ar out_file
+.Op Ar program_file
+.Sh DESCRIPTION
+The
+.Nm
+utility translates assembly code in the provided
+.Ar program_file
+to object code.
+If no
+.Ar program_file
+is provided,
+then the program text is taken from the standard input.
+The output is directed to
+.Pa a.out
+by default.
+.Pp
+The following options are available:
+.Bl -tag -width "-o file"
+.It Fl o Ar file
+Output to
+.Ar file
+instead of to
+.Pa a.out .
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr svm 1 ,
+.Xr synld 1 ,
+.Xr syn 5 ,
+.Xr synas 5
+.Sh HISTORY
+The
+.Lk "https://challenge.synacor.com" "Synacor Challenge"
+describes a simple machine and provides a sample program for said machine.
+Participants were to implement
+a virtual machine capable of running the provided program.
+Extending this challenge, an assembler and linker were contructed
+in December of 2021.
