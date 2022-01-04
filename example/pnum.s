@@ -1,8 +1,6 @@
 # _pnum(n) -> print n as a decimal value
-_pnum:	jf r0, p0
-	call pnumx
-	ret
-p0:	out $30
+_pnum:	jt r0, pnumx
+	out $30
 	ret
 pnumx:	jf r0, endp
 	set r1, 10
