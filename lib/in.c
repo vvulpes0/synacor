@@ -32,5 +32,5 @@ void
 svm_in(uint16_t * i)
 {
 	if (!i) { return; }
-	(*i) = fgetc(stdin);
+	(*i) = fgetc(stdin) & 0x7FFF;
 }
